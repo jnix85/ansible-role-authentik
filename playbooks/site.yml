@@ -11,7 +11,4 @@
   hosts: authentik_servers
   become: false
   roles:
-    - common
-    - docker
-    - acme_cert
-    - authentik
+    - role: authentik
