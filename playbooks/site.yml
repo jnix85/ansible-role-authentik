@@ -1,0 +1,17 @@
+---
+# Deploy authentik (self-hosted SSO / identity provider).
+#
+# NOTE: this play also lists `common`, `docker`, and `acme_cert` — sibling
+# roles from the source monorepo (proxmox-ansible-roles) that are not
+# vendored into this standalone role directory. Provide them yourself
+# (via requirements.yml / roles_path) or strip them and pre-bake the
+# equivalent (base packages, Docker Engine, a TLS cert at the paths
+# roles/authentik expects) before running this play.
+- name: Deploy authentik
+  hosts: authentik_servers
+  become: false
+  roles:
+    - common
+    - docker
+    - acme_cert
+    - authentik

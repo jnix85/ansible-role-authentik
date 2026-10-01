@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  role_name: authentik
+  author: jparks
+  description: Deploy authentik (self-hosted SSO / identity provider) via Docker Compose
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+  galaxy_tags:
+    - authentik
+    - sso
+    - identity
+    - docker
+
+dependencies: []

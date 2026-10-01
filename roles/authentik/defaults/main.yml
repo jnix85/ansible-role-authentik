@@ -1,0 +1,43 @@
+---
+# SPDX-License-Identifier: MIT
+
+# Image / version — pinned by default; override to track "latest" if desired.
+authentik_image: "ghcr.io/goauthentik/server"
+authentik_version: "2026.8.1"
+
+# Filesystem
+authentik_dir: /opt/authentik
+authentik_env_file: "{{ authentik_dir }}/.env"
+
+# Postgres
+authentik_pg_db: authentik
+authentik_pg_user: authentik
+
+# Networking — bind to loopback by default; front it with nginx/TLS (see
+# tasks/nginx.yml) or your own reverse proxy.
+authentik_http_bind_address: "127.0.0.1"
+authentik_http_port: 9000
+authentik_https_port: 9443
+
+# Public hostname authentik is reachable at (used for the nginx vhost and
+# the ACME cert list in group_vars).
+authentik_public_fqdn: "authentik.example.com"
+
+# Error reporting (sends anonymized errors to the authentik project)
+authentik_error_reporting_enabled: false
+
+# Optional extra environment variables (dict), merged in last (takes
+# precedence) — e.g. SMTP settings:
+#   authentik_extra_env:
+#     AUTHENTIK_EMAIL__HOST: smtp.example.com
+#     AUTHENTIK_EMAIL__PORT: "587"
+#     AUTHENTIK_EMAIL__USE_TLS: "true"
+#     AUTHENTIK_EMAIL__FROM: authentik@example.com
+authentik_extra_env: {}
+
+# Optional reverse proxy (nginx) with TLS termination. Expects a cert/key
+# pair at the paths below — see the acme_cert role in the source monorepo,
+# or point these at your own certificates.
+authentik_manage_nginx: false
+acme_cert_fullchain_file: "/etc/ssl/{{ acme_cert_name | default('authentik') }}/fullchain.pem"
+acme_cert_key_file: "/etc/ssl/{{ acme_cert_name | default('authentik') }}/privkey.pem"

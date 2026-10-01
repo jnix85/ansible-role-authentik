@@ -1,0 +1,68 @@
+---
+- name: Create authentik directory
+  ansible.builtin.file:
+    path: "{{ authentik_dir }}"
+    state: directory
+    mode: "0750"
+  become: true
+
+- name: Create authentik data/certs/template directories
+  ansible.builtin.file:
+    path: "{{ authentik_dir }}/{{ item }}"
+    state: directory
+    mode: "0750"
+  become: true
+  loop:
+    - data
+    - certs
+    - custom-templates
+
+- name: Check for existing runtime env
+  ansible.builtin.stat:
+    path: "{{ authentik_env_file }}"
+  become: true
+  register: authentik_env_stat
+
+# Runtime secrets (Postgres password, secret key) are generated ONCE on this
+# host and never leave it. Regenerating them would orphan the database and
+# invalidate every existing session/cookie.
+- name: Generate runtime secrets
+  ansible.builtin.set_fact:
+    authentik_pg_password: "{{ lookup('community.general.random_string', length=32, special=false) }}"
+    # authentik requires a long random secret key; docs recommend `openssl rand -base64 60`.
+    authentik_secret_key: "{{ lookup('community.general.random_string', length=60, special=false) | b64encode }}"
+  when: not authentik_env_stat.stat.exists
+  no_log: true
+
+- name: Write runtime env (first run only)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ authentik_env_file }}"
+    mode: "0600"
+    owner: root
+    group: root
+  become: true
+  when: not authentik_env_stat.stat.exists
+  no_log: true
+
+- name: Deploy compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ authentik_dir }}/docker-compose.yml"
+    mode: "0644"
+  become: true
+
+- name: Start authentik stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ authentik_dir }}"
+    state: present
+  become: true
+
+- name: Wait for authentik API
+  ansible.builtin.uri:
+    url: "http://{{ authentik_http_bind_address }}:{{ authentik_http_port }}/-/health/ready/"
+    status_code: 200
+  register: authentik_health
+  retries: 30
+  delay: 10
+  until: authentik_health.status == 200

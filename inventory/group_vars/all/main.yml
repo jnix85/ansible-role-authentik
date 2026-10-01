@@ -1,0 +1,5 @@
+---
+domain: clawduino.com
+
+# Default FQDN for a VM.
+vm_fqdn: "{{ inventory_hostname }}.{{ domain }}"

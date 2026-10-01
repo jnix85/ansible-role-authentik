@@ -1,0 +1,4 @@
+---
+- ansible.builtin.import_tasks: deploy.yml
+- ansible.builtin.import_tasks: nginx.yml
+  when: authentik_manage_nginx

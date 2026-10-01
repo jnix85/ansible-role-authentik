@@ -1,0 +1,15 @@
+---
+# authentik — single VM. Runtime secrets (Postgres password, secret key) are
+# generated on the host on first run and persist in /opt/authentik/.env —
+# they never round-trip through Ansible.
+
+authentik_version: "2026.8.1"
+authentik_dir: /opt/authentik
+authentik_public_fqdn: "authentik.{{ domain }}"
+
+acme_cert_name: authentik
+acme_cert_email: "admin@{{ domain }}"
+acme_cert_domains:
+  - "{{ authentik_public_fqdn }}"
+  - "{{ vm_fqdn }}"
+acme_cert_post_hook: "systemctl reload nginx"
